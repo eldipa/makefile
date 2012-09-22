@@ -1,0 +1,61 @@
+-include Makedepend
+
+STRICT = -Wall -Wextra -pedantic -pedantic-errors -Werror -std=c++98
+DEBUG = -ggdb -DDEBUG -fno-inline -rdynamic
+OPTIMIZATION = -O0
+
+COMPILER_FLAGS = $(STRICT) $(DEBUG) $(OPTIMIZATION)
+ARCHIVER_FLAGS = -ruc
+
+COMPILE = $(TIMEIT) g++ -c $(COMPILER_FLAGS) $(INCLUDEPATHS) -o $@ $<
+DEPEND = $(TIMEIT) g++ -MM $(COMPILER_FLAGS) $(INCLUDEPATHS) -MF $@ $(subst .deps,.cpp,$@)
+ARCHIVE = $(TIMEIT) ar $(ARCHIVER_FLAGS) $@ $^ 
+LINK = $(TIMEIT) g++ $(LINKER_FLAGS) $(LIBRARYPATHS) -o $@ $@.o $(filter-out $(patsubst %, %.o, $(TARGET)), $^) $(subst lib%.a, -l%, $(LIBRARIES))
+RM = $(TIMEIT) rm -f 
+
+ifeq ($(verbose), 0)
+   PRINT_COMPILE = @printf "\033[35m  %-$(ALIGN)s \033[0m" "Compiling $<" ; 
+   PRINT_DEPEND = @printf "\033[32;2m  %-$(ALIGN)s \033[0m" "Resolving dependencies for $(subst .deps,.cpp,$@)" ; 
+   PRINT_ARCHIVE = @printf "\033[36;1m  %-$(ALIGN)s \033[0m" "Archiving into $@" ; 
+   PRINT_LINK = @printf "\033[36;1m  %-$(ALIGN)s \033[0m" "Linking into $@" ; 
+   PRINT_RM_DEPS = @printf "\033[31m  %-$(ALIGN)s \033[0m" "Removing depenencies..." ; 
+   PRINT_RM_OBJECTS = @printf "\033[31m  %-$(ALIGN)s \033[0m" "Removing objects..." ;
+   PRINT_RM_TARGET = @printf "\033[31m  %-$(ALIGN)s \033[0m" "Removing target..." ;
+endif
+
+SRC = $(wildcard *.cpp)
+OBJ = $(SRC:.cpp=.o)	
+DEPS = $(SRC:.cpp=.deps)
+
+.PHONY: all clean depclean mostlyclean
+
+.cpp.o:
+	$(PRINT_COMPILE) $(COMPILE) $(NL)
+
+all: $(DEPS) $(TARGET)
+
+ifeq (link, $(findstring link,$(TARGET_CMD)))
+$(TARGET): $(OBJ) $(LIBRARIES)
+	$(PRINT_LINK) $(LINK) $(NL)
+else
+$(TARGET): $(OBJ)
+	$(PRINT_ARCHIVE) $(ARCHIVE) $(NL)
+endif
+
+$(DEPS): 
+	$(PRINT_DEPEND) $(DEPEND) $(NL)
+
+depclean:
+	$(PRINT_RM_DEPS) $(RM) $(DEPS) $(NL)
+
+mostlyclean: depclean
+	$(PRINT_RM_OBJECTS) $(RM) $(OBJ)  $(NL)
+
+clean: mostlyclean 
+	$(PRINT_RM_TARGET) $(RM) $(TARGET)  $(NL)
+
+# This will include in this Makefile all the "sub makefiles" with the depenencies loaded
+# Only if not is a "clean" rule (eg. "make clean" or "make depclean")
+ifneq (clean,$(findstring clean,$(MAKECMDGOALS)))
+-include $(DEPS)
+endif
