@@ -1,17 +1,40 @@
--include Makedepend
 
+# Tipical flags used by the compiler
 STRICT = -Wall -Wextra -pedantic -pedantic-errors -Werror -std=c++98
 DEBUG = -ggdb -DDEBUG -fno-inline -rdynamic
 OPTIMIZATION = -O0
 
+# More flags
 COMPILER_FLAGS = $(STRICT) $(DEBUG) $(OPTIMIZATION)
 ARCHIVER_FLAGS = -ruc
+LINKER_FLAGS =
 
-COMPILE = $(TIMEIT) g++ -c $(COMPILER_FLAGS) $(INCLUDEPATHS) -o $@ $<
-DEPEND = $(TIMEIT) g++ -MM $(COMPILER_FLAGS) $(INCLUDEPATHS) -MF $@ $(subst .deps,.cpp,$@)
+# This are the paths to external files used by the compiler and the linker.
+INCLUDE_PATHS = 
+LIBRARY_PATHS = 
+
+
+# This (this makefile) is a template, so you can override or extend each variable writting
+# a 'Makeconfig', a file with the same syntax that a make file
+#
+# So, the 'GLOBAL' configuration can be modified
+-include Makeconfig
+
+
+# This are the tools used to compile, generate the dependencies, to archive, link and
+# delete files. 
+#
+# The '$@' element represent the target object, '$<' is the first dependency element
+# and '$^' are the dependencies without duplicated of that rule.
+COMPILE = $(TIMEIT) g++ -c $(COMPILER_FLAGS) $(INCLUDE_PATHS) -o $@ $<
+DEPEND = $(TIMEIT) g++ -MM $(COMPILER_FLAGS) $(INCLUDE_PATHS) -MF $@ $(subst .deps,.cpp,$@)
 ARCHIVE = $(TIMEIT) ar $(ARCHIVER_FLAGS) $@ $^ 
-LINK = $(TIMEIT) g++ $(LINKER_FLAGS) $(LIBRARYPATHS) -o $@ $@.o $(filter-out $(patsubst %, %.o, $(TARGET)), $^) $(subst lib%.a, -l%, $(LIBRARIES))
+LINK = $(TIMEIT) g++ $(LINKER_FLAGS) $(LIBRARY_PATHS) -o $@ $@.o $(filter-out $(patsubst %, %.o, $(TARGET)), $^) $(subst lib%.a, -l%, $(LIBRARIES))
 RM = $(TIMEIT) rm -f 
+
+#
+# END OF THE CONFIGURATION
+#
 
 ifeq ($(verbose), 0)
    PRINT_COMPILE = @printf "\033[35m  %-$(ALIGN)s \033[0m" "Compiling $<" ; 
