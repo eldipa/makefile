@@ -25,9 +25,18 @@ LIBRARY_PATHS =
 #
 # If TARGET is of the form:
 #  - lib*.a then the makefile will build a static library archive using ARCHIVE
-#  - lib*.so the the makefile will build a dynamic library using DYNAMIC
+#  	    and collecting all the *.o object
 #
-#  in other cases, the makefile will build an executable using LINK
+#  - lib*.so the the makefile will build a dynamic library using DYNAMIC
+#  	    and collecting all the *.o object
+#
+#  in other cases, the makefile will build an executable using LINK 
+#  In this case, TARGET MUST BE a name X where the object X.o can be builded (tipically,
+#  X.cpp exists) 
+#  This is required because the linker must link ONLY ONE target at time and this
+#  is implemented filter-out the rest of the targets.
+#  Obviously, X.cpp must have a 'main' function.
+#
 -include Makeconfig
 
 
@@ -39,7 +48,7 @@ LIBRARY_PATHS =
 COMPILE = $(TIMEIT) g++ -c $(COMPILER_FLAGS) $(INCLUDE_PATHS) -o $@ $<
 DEPEND = $(TIMEIT) g++ -MM $(COMPILER_FLAGS) $(INCLUDE_PATHS) -MF $@ $(subst .deps,.cpp,$@)
 ARCHIVE = $(TIMEIT) ar $(ARCHIVER_FLAGS) $@ $^ 
-LINK = $(TIMEIT) g++ $(LINKER_FLAGS) $(LIBRARY_PATHS) -o $@ $@.o $(filter-out $(patsubst %, %.o, $(TARGET)), $^) $(subst lib%.a, -l%, $(LIBRARIES))
+LINK = $(TIMEIT) g++ $(LINKER_FLAGS) $(LIBRARY_PATHS) -o $@ $@.o $(filter-out $(patsubst %, %.o, $(filter-out lib%.a lib%.so,$(TARGET))), $^) $(subst lib%.a, -l%, $(LIBRARIES))
 DYNAMIC = $(TIMEIT) g++ -shared $(DYNAMIC_FLAGS) -o $@ $^ 
 RM = $(TIMEIT) rm -f 
 

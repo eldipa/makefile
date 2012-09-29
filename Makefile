@@ -41,7 +41,7 @@ ifeq ($(verbose), 0)
    
    export ALIGN = 60
 
-   MAKECALL = $(MAKE) -e --no-print-directory -f - -C $@ $(MAKECMDGOALS) < MakefileModule 
+   MAKECALL = $(MAKE) -e --no-print-directory -f - -C $@ $(filter-out $@, $(MAKECMDGOALS)) < MakefileModule 
    PRINT_ENTERMAKECALL = @printf "\033[34m%s\n\033[0m" "Entering $@" ; 
    PRINT_LEAVEMAKECALL = ; printf "\033[34m%s\n\033[0m" "Leaving $@" ; 
    export PRINT_ERROR = @printf "\033[31m%s\n\033[0m"  
@@ -58,17 +58,20 @@ e1:
 	$(PRINT_ERROR) "The 'SUBMODULES' must be defined (in the Makefile file)"
 endif
 
-#TOEXECUTE = $(filter $(SUBMODULES), $(MAKECMDGOALS))
+TOEXECUTE = $(filter $(SUBMODULES), $(MAKECMDGOALS))
+ifeq "$(strip $(TOEXECUTE))" ""
+  TOEXECUTE = $(SUBMODULES)
+endif 
 
-all: $(SUBMODULES)
+all: $(TOEXECUTE)
 
-depclean: $(SUBMODULES)
+depclean: $(TOEXECUTE)
 
-clean: $(SUBMODULES)
+clean: $(TOEXECUTE)
 
-mostlyclean: $(SUBMODULES)
+mostlyclean: $(TOEXECUTE)
 
-$(SUBMODULES):
+$(TOEXECUTE):
 	$(PRINT_ENTERMAKECALL) $(MAKECALL) $(PRINT_LEAVEMAKECALL)
 
 #
