@@ -21,6 +21,10 @@ export timeit = 1
 # 
 #  SUBMODULES = common client/gui client server
 #
+#  If you only want to build the sources in the same directory if this makefile
+#
+#  SUBMODULES = .
+#
 #  Note that the order is important and is honored in the building process.
 SUBMODULES = 
 
@@ -40,12 +44,21 @@ ifeq ($(verbose), 0)
    MAKECALL = $(MAKE) -e --no-print-directory -f - -C $@ $(MAKECMDGOALS) < MakefileModule 
    PRINT_ENTERMAKECALL = @printf "\033[34m%s\n\033[0m" "Entering $@" ; 
    PRINT_LEAVEMAKECALL = ; printf "\033[34m%s\n\033[0m" "Leaving $@" ; 
+   export PRINT_ERROR = @printf "\033[31m%s\n\033[0m"  
 else
    MAKECALL = $(MAKE) -e -f - -C $@ $(MAKECMDGOALS) < MakefileModule 
+   export PRINT_ERROR = @echo   
 endif
 
 
-.PHONY: all clean depclean mostlyclean $(SUBMODULES)
+.PHONY: all clean depclean mostlyclean e1 $(SUBMODULES)
+
+ifndef SUBMODULES
+e1:
+	$(PRINT_ERROR) "The 'SUBMODULES' must be defined (in the Makefile file)"
+endif
+
+#TOEXECUTE = $(filter $(SUBMODULES), $(MAKECMDGOALS))
 
 all: $(SUBMODULES)
 
