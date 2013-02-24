@@ -16,9 +16,9 @@ export timeit = 1
 #   - client/gui    The separated source with the 'graphical user interface' use by the client
 #   - server        The server side
 #   - common        The source that is common to the client and the server.
-#  
+#
 #  With this layering, the 'SUBMODULES' variable is
-# 
+#
 #  SUBMODULES = common client/gui client server
 #
 #  If you only want to build the sources in the same directory if this makefile
@@ -26,7 +26,7 @@ export timeit = 1
 #  SUBMODULES = .
 #
 #  Note that the order is important and is honored in the building process.
-SUBMODULES = 
+SUBMODULES =
 
 #
 # END OF THE CONFIGURATION
@@ -38,16 +38,16 @@ ifeq ($(verbose), 0)
    else
       export NL = ; echo ""
    endif
-   
+
    export ALIGN = 65
 
-   MAKECALL = $(MAKE) -e --no-print-directory -f - -C $@ $(filter-out $@, $(MAKECMDGOALS)) < MakefileModule 
-   PRINT_ENTERMAKECALL = @printf "\033[34m%s\n\033[0m" "Entering $@" ; 
-   PRINT_LEAVEMAKECALL = ; printf "\033[34m%s\n\033[0m" "Leaving $@" ; 
-   export PRINT_ERROR = @printf "\033[31m%s\n\033[0m"  
+   MAKECALL = $(MAKE) -e --no-print-directory -f - -C $@ $(filter-out $@, $(MAKECMDGOALS)) < MakefileModule
+   PRINT_ENTERMAKECALL = @printf "\033[34m%s\n\033[0m" "Entering $@" ;
+   PRINT_LEAVEMAKECALL = ; printf "\033[34m%s\n\033[0m" "Leaving $@" ;
+   export PRINT_ERROR = @printf "\033[31m%s\n\033[0m"
 else
-   MAKECALL = $(MAKE) -e -f - -C $@ $(MAKECMDGOALS) < MakefileModule 
-   export PRINT_ERROR = @echo   
+   MAKECALL = $(MAKE) -e -f - -C $@ $(MAKECMDGOALS) < MakefileModule
+   export PRINT_ERROR = @echo
 endif
 
 
@@ -61,7 +61,7 @@ endif
 TOEXECUTE = $(filter $(SUBMODULES), $(MAKECMDGOALS))
 ifeq "$(strip $(TOEXECUTE))" ""
   TOEXECUTE = $(SUBMODULES)
-endif 
+endif
 
 all: $(TOEXECUTE)
 
