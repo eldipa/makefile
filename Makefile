@@ -55,6 +55,7 @@ SUBMODULES =
 
 # Tipical flags used by the compiler
 COMPILER = g++
+SRCEXT = .cpp
 STRICT = -Wall -Wextra -pedantic -pedantic-errors -Werror  -std=c++98
 DEBUG = -ggdb -DDEBUG
 OPTIMIZATION = -O0
@@ -91,7 +92,7 @@ ifeq ($(onsubmodule), 1)
 # The '$@' element represent the target object, '$<' is the first dependency element
 # and '$^' are the dependencies without duplicated of that rule.
 COMPILE = $(TIMEIT) $(COMPILER) -c $(COMPILER_FLAGS) $(patsubst %, -I%, $(INCLUDE_PATHS)) -o $@ $<
-DEPEND = $(TIMEIT) $(COMPILER) -MM $(COMPILER_FLAGS) $(patsubst %, -I%, $(INCLUDE_PATHS)) -MF $@ $(subst .deps,.cpp,$@)
+DEPEND = $(TIMEIT) $(COMPILER) -MM $(COMPILER_FLAGS) $(patsubst %, -I%, $(INCLUDE_PATHS)) -MF $@ $(subst .deps,$(SRCEXT),$@)
 ARCHIVE = $(TIMEIT) ar $(ARCHIVER_FLAGS) $@ $^
 LINK = $(TIMEIT) $(COMPILER) $(LINKER_FLAGS) $(patsubst %, -L%, $(EXTERNAL_LIBRARY_PATHS)) -o $@ $@.o $(filter-out $(patsubst %, %.o, $(TARGET)), $^)  $(patsubst %, -l%, $(EXTERNAL_LIBRARIES))
 DYNAMIC = $(TIMEIT) $(COMPILER) -shared $(DYNAMIC_FLAGS) -o $@ $^
@@ -104,7 +105,7 @@ RM = $(TIMEIT) rm -f
 
 ifeq ($(verbose), 0)
    PRINT_COMPILE = @printf "\033[35m  %-$(ALIGN)s \033[0m" "Compiling $<" ;
-   PRINT_DEPEND = @printf "\033[32;2m  %-$(ALIGN)s \033[0m" "Dependencies of $(subst .deps,.cpp,$@)" ;
+   PRINT_DEPEND = @printf "\033[32;2m  %-$(ALIGN)s \033[0m" "Dependencies of $(subst .deps,$(SRCEXT),$@)" ;
    PRINT_ARCHIVE = @printf "\033[36;1m  %-$(ALIGN)s \033[0m" "Archiving into $@" ;
    PRINT_LINK = @printf "\033[36;1m  %-$(ALIGN)s \033[0m" "Linking into $@" ;
    PRINT_DYNAMIC = @printf "\033[36;1m  %-$(ALIGN)s \033[0m" "Building shared library $@" ;
@@ -115,13 +116,13 @@ ifeq ($(verbose), 0)
    PRINT_MAKE_EXTERN_DONE = && printf \"\033[36;3m  %-$(ALIGN)s \033[0m\" \"  Done\"
 endif
 
-SRC = $(wildcard *.cpp)
-OBJ = $(SRC:.cpp=.o)
-DEPS = $(SRC:.cpp=.deps)
+SRC = $(wildcard *$(SRCEXT))
+OBJ = $(SRC:$(SRCEXT)=.o)
+DEPS = $(SRC:$(SRCEXT)=.deps)
 
 .PHONY: all clean depclean mostlyclean e1
 
-.cpp.o:
+$(SRCEXT).o:
 	$(PRINT_COMPILE) $(COMPILE) $(NL)
 
 ifndef TARGET
